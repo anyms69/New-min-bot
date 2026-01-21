@@ -266,4 +266,60 @@ document.querySelector('.btn-login')?.addEventListener('click', function() {
 
 document.querySelector('.btn-register')?.addEventListener('click', function() {
     alert('Форма регистрации будет добавлена позже!');
+});// Добавить параллакс эффект
+function initParallax() {
+    const hero = document.querySelector('.hero');
+    if (!hero) return;
+    
+    window.addEventListener('scroll', () => {
+        const scrolled = window.pageYOffset;
+        const rate = scrolled * -0.5;
+        hero.style.backgroundPosition = `0px ${rate}px`;
+    });
+}
+
+// Добавить анимацию при скролле
+function initScrollAnimations() {
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('animated');
+            }
+        });
+    }, observerOptions);
+    
+    document.querySelectorAll('.stat, .tour-card, .feature-card').forEach(el => {
+        observer.observe(el);
+    });
+}
+
+// Инициализировать всё при загрузке
+document.addEventListener('DOMContentLoaded', function() {
+    // ... существующий код ...
+    
+    initParallax();
+    initScrollAnimations();
+    
+    // Добавить эффект набора текста
+    const heroTitle = document.querySelector('.hero-title');
+    if (heroTitle) {
+        const text = heroTitle.textContent;
+        heroTitle.textContent = '';
+        let i = 0;
+        
+        function typeWriter() {
+            if (i < text.length) {
+                heroTitle.textContent += text.charAt(i);
+                i++;
+                setTimeout(typeWriter, 50);
+            }
+        }
+        
+        setTimeout(typeWriter, 500);
+    }
 });

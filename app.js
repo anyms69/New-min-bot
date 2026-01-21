@@ -1,36 +1,76 @@
-const container = document.getElementById('cards-container');
-const filterButtons = document.querySelectorAll('.filter-btn');
+const cards = document.getElementById("cards");
+const search = document.getElementById("search");
+const filterBtns = document.querySelectorAll(".filters button");
 
 const data = [
-  {title:"Обзорная экскурсия", description:"Пешая экскурсия по центру города.", price:1500, duration:"2 часа", category:"пешая", city:"Москва", language:"RU", images:["https://images.unsplash.com/photo-1578693674148-37dcaa3546f8?crop=entropy&cs=tinysrgb&fit=max&h=200","https://images.unsplash.com/photo-1581091012184-168d9bc39a6c?crop=entropy&cs=tinysrgb&fit=max&h=200"], weekdays:["Mon","Wed","Fri"], max_participants:20, available:true, booking_link:"https://example.com/booking1", active:true},
-  {title:"Ночная экскурсия", description:"Город вечером, огни и легенды.", price:2000, duration:"3 часа", category:"ночная", city:"Москва", language:"RU", images:["https://images.unsplash.com/photo-1506349680387-930e372f9a52?crop=entropy&cs=tinysrgb&fit=max&h=200","https://images.unsplash.com/photo-1509403271361-6b8a29fba5cf?crop=entropy&cs=tinysrgb&fit=max&h=200"], weekdays:["Fri","Sat"], max_participants:15, available:true, booking_link:"https://example.com/booking2", active:true},
-  {title:"Музеи и искусство", description:"Лучшие музеи с гидом.", price:1800, duration:"2.5 часа", category:"музейная", city:"Санкт-Петербург", language:"RU", images:["https://images.unsplash.com/photo-1529630897576-8e0db8d4d3e1?crop=entropy&cs=tinysrgb&fit=max&h=200","https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?crop=entropy&cs=tinysrgb&fit=max&h=200"], weekdays:["Tue","Thu"], max_participants:0, available:false, booking_link:"https://example.com/booking3", active:true},
-  {title:"Набережная вечерняя", description:"Романтическая прогулка вдоль набережной.", price:1200, duration:"1.5 часа", category:"ночная", city:"Санкт-Петербург", language:"RU", images:["https://images.unsplash.com/photo-1529400971008-f566de0e6dfc?crop=entropy&cs=tinysrgb&fit=max&h=200","https://images.unsplash.com/photo-1549887533-78e0a2f22c3c?crop=entropy&cs=tinysrgb&fit=max&h=200"], weekdays:["Fri","Sat"], max_participants:10, available:true, booking_link:"https://example.com/booking4", active:true},
-  {title:"Парковая прогулка", description:"Прогулка по лучшим паркам города.", price:1000, duration:"2 часа", category:"пешая", city:"Сочи", language:"RU", images:["https://images.unsplash.com/photo-1506744038136-46273834b3fb?crop=entropy&cs=tinysrgb&fit=max&h=200"], weekdays:["Mon","Wed"], max_participants:25, available:true, booking_link:"https://example.com/booking5", active:true},
-  {title:"Исторический центр", description:"Экскурсия по старинным кварталам.", price:1600, duration:"3 часа", category:"пешая", city:"Казань", language:"RU", images:["https://images.unsplash.com/photo-1534126511673-b6899657816a?crop=entropy&cs=tinysrgb&fit=max&h=200"], weekdays:["Tue","Thu"], max_participants:15, available:true, booking_link:"https://example.com/booking6", active:true},
-  {title:"Музейные тайны", description:"Узнай секреты музеев.", price:2000, duration:"2 часа", category:"музейная", city:"Москва", language:"RU", images:["https://images.unsplash.com/photo-1500917293891-ef795e70e1f6?crop=entropy&cs=tinysrgb&fit=max&h=200"], weekdays:["Wed","Fri"], max_participants:5, available:true, booking_link:"https://example.com/booking7", active:true},
-  {title:"Ночной город", description:"Освещённый город и легенды.", price:1800, duration:"2.5 часа", category:"ночная", city:"Сочи", language:"RU", images:["https://images.unsplash.com/photo-1505672678657-cc7037095e2c?crop=entropy&cs=tinysrgb&fit=max&h=200"], weekdays:["Sat","Sun"], max_participants:8, available:true, booking_link:"https://example.com/booking8", active:true},
-  {title:"Природные маршруты", description:"Экскурсия на природу и смотровые.", price:2200, duration:"4 часа", category:"пешая", city:"Крым", language:"RU", images:["https://images.unsplash.com/photo-1501785888041-af3ef285b470?crop=entropy&cs=tinysrgb&fit=max&h=200"], weekdays:["Mon","Tue"], max_participants:12, available:true, booking_link:"https://example.com/booking9", active:true},
-  {title:"Городские легенды", description:"Рассказы и мистические места.", price:1900, duration:"3 часа", category:"ночная", city:"Санкт-Петербург", language:"RU", images:["https://images.unsplash.com/photo-1473187983305-f615310e7daa?crop=entropy&cs=tinysrgb&fit=max&h=200"], weekdays:["Fri"], max_participants:0, available:false, booking_link:"https://example.com/booking10", active:true}
+  {
+    title: "Ночной хребург",
+    city: "СПБ",
+    category: "ночная",
+    price: 1900,
+    duration: "3 часа",
+    image: "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb",
+    available: true
+  },
+  {
+    title: "Музеи Москвы",
+    city: "Москва",
+    category: "музейная",
+    price: 2100,
+    duration: "2 часа",
+    image: "https://images.unsplash.com/photo-1529429617124-95b109e86bb8",
+    available: false
+  },
+  {
+    title: "Центр Казани",
+    city: "Казань",
+    category: "пешая",
+    price: 1500,
+    duration: "2 часа",
+    image: "https://images.unsplash.com/photo-1534447677768-be436bb09401",
+    available: true
+  }
 ];
 
-function buildCards(excurisons){
-  container.innerHTML='';
-  excurisons.forEach(exc=>{
-    if(!exc.active) return;
-    const card=document.createElement('div'); card.className='card';
-    const h2=document.createElement('h2'); h2.textContent=exc.title; card.appendChild(h2);
-    const desc=document.createElement('p'); desc.className='description'; desc.textContent=exc.description; card.appendChild(desc);
-    const price=document.createElement('p'); price.className='price'; price.textContent=`${exc.price} ₽`; card.appendChild(price);
-    const duration=document.createElement('p'); duration.className='duration'; duration.textContent=exc.duration; card.appendChild(duration);
-    const gallery=document.createElement('div'); gallery.className='gallery'; exc.images.forEach(src=>{const img=document.createElement('img'); img.src=src; gallery.appendChild(img);}); card.appendChild(gallery);
-    const days=document.createElement('div'); days.className='weekdays'; exc.weekdays.forEach(d=>{const span=document.createElement('span'); span.className='weekday-badge'; span.textContent=d; days.appendChild(span);}); card.appendChild(days);
-    const avail=document.createElement('p'); avail.className='availability '+(exc.available?'available':'unavailable'); avail.textContent=exc.available?`Остаток мест: ${exc.max_participants}`:'Мест нет'; card.appendChild(avail);
-    const btn=document.createElement('button'); btn.className='book-btn'; btn.textContent='Забронировать'; if(!exc.available) btn.disabled=true; btn.onclick=()=>window.open(exc.booking_link,'_blank'); card.appendChild(btn);
-    container.appendChild(card);
+let currentFilter = "all";
+
+function render(list) {
+  cards.innerHTML = "";
+  list.forEach(e => {
+    const div = document.createElement("div");
+    div.className = "card";
+    div.innerHTML = `
+      <img src="${e.image}">
+      <div class="card-body">
+        <h3>${e.title}</h3>
+        <div class="meta">${e.city} · ${e.duration}</div>
+        <div class="price">${e.price} ₽</div>
+        <button ${!e.available ? "disabled" : ""}>
+          ${e.available ? "Забронировать" : "Нет мест"}
+        </button>
+      </div>
+    `;
+    cards.appendChild(div);
   });
 }
 
-filterButtons.forEach(btn=>{btn.addEventListener('click',()=>{filterButtons.forEach(b=>b.classList.remove('active')); btn.classList.add('active'); const type=btn.dataset.type; if(type==='all') buildCards(data); else buildCards(data.filter(exc=>exc.category===type));});});
+filterBtns.forEach(btn => {
+  btn.onclick = () => {
+    filterBtns.forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    currentFilter = btn.dataset.type;
+    update();
+  };
+});
 
-buildCards(data);
+search.oninput = update;
+
+function update() {
+  const q = search.value.toLowerCase();
+  render(data.filter(e =>
+    (currentFilter === "all" || e.category === currentFilter) &&
+    e.title.toLowerCase().includes(q)
+  ));
+}
+
+update();

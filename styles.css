@@ -1,0 +1,126 @@
+/* Общий фон приложения */
+body {
+  font-family: 'Roboto', sans-serif;
+  background-color: #f7f7f7;
+  margin: 0;
+  padding: 0;
+}
+
+/* Панель фильтров */
+#filters {
+  display: flex;
+  justify-content: space-around;
+  padding: 10px;
+  background-color: #ffffff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+/* Кнопки фильтров */
+.filter-btn {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: none;
+  background-color: #eeeeee;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.filter-btn.active {
+  background-color: #ff6f00;
+  color: #fff;
+}
+
+/* Контейнер карточек */
+#cards-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+}
+
+/* Карточка экскурсии */
+.card {
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Заголовок */
+.card h2 {
+  margin: 0;
+  font-size: 18px;
+  color: #333;
+}
+
+/* Описание */
+.card p.description {
+  color: #555;
+  font-size: 14px;
+  margin: 4px 0;
+}
+
+/* Цена и длительность */
+.card .price {
+  color: #ff6f00;
+  font-weight: bold;
+}
+.card .duration {
+  color: #555;
+}
+
+/* Доступные дни */
+.card .weekdays {
+  display: flex;
+  gap: 6px;
+}
+.weekday-badge {
+  background-color: #ffd54f;
+  border-radius: 8px;
+  padding: 2px 6px;
+  font-size: 12px;
+}
+
+/* Галерея изображений */
+.card .gallery {
+  display: flex;
+  overflow-x: auto;
+  gap: 4px;
+}
+.card .gallery img {
+  width: 120px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+/* Остаток мест */
+.card .availability {
+  font-weight: bold;
+}
+.card .available { color: #4caf50; }
+.card .unavailable { color: #f44336; }
+
+/* Кнопка бронирования */
+.card .book-btn {
+  background-color: #ff6f00;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.2s;
+}
+.card .book-btn:disabled {
+  background-color: #ccc;
+  cursor: default;
+}
+.card .book-btn:hover:not(:disabled) {
+  transform: scale(1.05);
+}

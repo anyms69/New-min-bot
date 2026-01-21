@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Туры по России | Telegram App</title>
+    
+    <!-- Шрифты -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Иконки -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Telegram Web App SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <style>
+        :root {
+            --tg-theme-bg-color: #ffffff;
+            --tg-theme-text-color: #000000;
+            --tg-theme-hint-color: #707579;
+            --tg-theme-link-color: #3390ec;
+            --tg-theme-button-color: #3390ec;
+            --tg-theme-button-text-color: #ffffff;
+            
+            --primary: 51 144 236;
+            --secondary: 168 85 247;
+            --accent: 14 165 233;
+            --success: 34 197 94;
+            --warning: 234 179 8;
+            --danger: 239 68 68;
+            
+            --background: 255 255 255;
+            --foreground: 15 23 42;
+            --card: 248 250 252;
+            --border: 226 232 240;
+            --muted: 100 116 139;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: rgb(var(--background));
+            color: rgb(var(--foreground));
+            overscroll-behavior: none;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        /* Telegram specific */
+        .tg-header-spacer {
+            height: env(safe-area-inset-top, 0px);
+            background: rgb(var(--background));
+        }
+    </style>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Telegram Header Spacer -->
+    <div class="tg-header-spacer"></div>
+    
+    <!-- App Header -->
+    <header class="tg-header">
+        <div class="container">
+            <div class="tg-header-content">
+                <button class="tg-back-btn" id="backBtn">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                
+                <div class="tg-header-title">
+                    <div class="tg-logo">
+                        <i class="fas fa-mountain-sun"></i>
+                        <span>Turista</span>
+                    </div>
+                </div>
+                
+                <div class="tg-header-actions">
+                    <button class="tg-search-btn" id="searchBtn">
+                        <i class="fas fa-search"></i>
+                    </button>
+                    <button class="tg-menu-btn" id="menuBtn">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Main App -->
+    <main class="tg-main">
+        <!-- Home Tab -->
+        <section class="tg-tab active" id="homeTab">
+            <!-- Hero Banner -->
+            <div class="tg-hero">
+                <div class="tg-hero-content">
+                    <h1 class="tg-hero-title">Туры по России</h1>
+                    <p class="tg-hero-subtitle">25+ направлений от Камчатки до Калининграда</p>
+                    
+                    <div class="tg-search-box">
+                        <div class="search-input">
+                            <i class="fas fa-search"></i>
+                            <input type="text" placeholder="Куда хотите поехать?" id="mainSearch">
+                        </div>
+                        <button class="search-btn" id="mainSearchBtn">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="tg-hero-stats">
+                    <div class="stat">
+                        <div class="stat-number">25+</div>
+                        <div class="stat-label">Туров</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">12</div>
+                        <div class="stat-label">Регионов</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">98%</div>
+                        <div class="stat-label">Довольных</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Categories -->
+            <div class="tg-categories">
+                <h2 class="tg-section-title">Категории</h2>
+                <div class="tg-categories-grid">
+                    <button class="category-btn active" data-category="all">
+                        <i class="fas fa-globe"></i>
+                        <span>Все туры</span>
+                    </button>
+                    <button class="category-btn" data-category="popular">
+                        <i class="fas fa-fire"></i>
+                        <span>Популярные</span>
+                    </button>
+                    <button class="category-btn" data-category="golden_ring">
+                        <i class="fas fa-church"></i>
+                        <span>Золотое кольцо</span>
+                    </button>
+                    <button class="category-btn" data-category="mountains">
+                        <i class="fas fa-mountain"></i>
+                        <span>Горные</span>
+                    </button>
+                    <button class="category-btn" data-category="baikal">
+                        <i class="fas fa-water"></i>
+                        <span>Байкал</span>
+                    </button>
+                    <button class="category-btn" data-category="kamchatka">
+                        <i class="fas fa-volcano"></i>
+                        <span>Камчатка</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Featured Tours -->
+            <div class="tg-featured">
+                <div class="tg-section-header">
+                    <h2 class="tg-section-title">Рекомендуем</h2>
+                    <button class="tg-see-all" id="seeAllTours">
+                        Все туры
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+                
+                <div class="tg-featured-slider" id="featuredSlider">
+                    <!-- Featured tours will be loaded here -->
+                </div>
+            </div>
+            
+            <!-- All Tours -->
+            <div class="tg-tours">
+                <div class="tg-section-header">
+                    <h2 class="tg-section-title">Все туры</h2>
+                    <div class="tg-view-controls">
+                        <button class="view-btn active" data-view="grid">
+                            <i class="fas fa-th"></i>
+                        </button>
+                        <button class="view-btn" data-view="list">
+                            <i class="fas fa-list"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="tg-tours-grid" id="toursGrid">
+                    <!-- Tours will be loaded here -->
+                </div>
+                
+                <div class="tg-load-more">
+                    <button class="tg-load-btn" id="loadMoreBtn">
+                        <span>Показать еще</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Search Tab -->
+        <section class="tg-tab" id="searchTab">
+            <div class="tg-search-header">
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Поиск туров..." id="searchInput" autocomplete="off">
+                    <button class="clear-search" id="clearSearch">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <button class="tg-close-search" id="closeSearch">
+                    Отмена
+                </button>
+            </div>
+            
+            <div class="tg-search-filters">
+                <div class="filter-section">
+                    <h3>Цена, ₽</h3>
+                    <div class="price-slider">
+                        <input type="range" id="priceSlider" min="10000" max="200000" value="75000">
+                        <div class="price-values">
+                            <span>10 000</span>
+                            <span id="currentPrice">75 000</span>
+                            <span>200 000</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="filter-section">
+                    <h3>Длительность</h3>
+                    <div class="duration-filters">
+                        <button class="duration-btn active">Любая</button>
+                        <button class="duration-btn">1-3 дня</button>
+                        <button class="duration-btn">4-7 дней</button>
+                        <button class="duration-btn">8+ дней</button>
+                    </div>
+                </div>
+                
+                <div class="filter-section">
+                    <h3>Сложность</h3>
+                    <div class="difficulty-filters">
+                        <button class="difficulty-btn active">Все</button>
+                        <button class="difficulty-btn easy">Легкая</button>
+                        <button class="difficulty-btn medium">Средняя</button>
+                        <button class="difficulty-btn hard">Сложная</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tg-search-results" id="searchResults">
+                <div class="empty-state">
+                    <i class="fas fa-search"></i>
+                    <h3>Начните поиск</h3>
+                    <p>Введите название тура или регион</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Filters Tab -->
+        <section class="tg-tab" id="filtersTab">
+            <div class="tg-filters-header">
+                <h2>Фильтры</h2>
+                <button class="tg-close-filters" id="closeFilters">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="tg-filters-content">
+                <div class="filter-group">
+                    <h3>Регион</h3>
+                    <div class="region-filters">
+                        <label class="region-checkbox">
+                            <input type="checkbox" name="region" value="all" checked>
+                            <span class="checkmark"></span>
+                            <span>Все регионы</span>
+                        </label>
+                        <label class="region-checkbox">
+                            <input type="checkbox" name="region" value="golden_ring">
+                            <span class="checkmark"></span>
+                            <span>Золотое кольцо</span>
+                        </label>
+                        <label class="region-checkbox">
+                            <input type="checkbox" name="region" value="caucasus">
+                            <span class="checkmark"></span>
+                            <span>Кавказ</span>
+                        </label>
+                        <label class="region-checkbox">
+                            <input type="checkbox" name="region" value="baikal">
+                            <span class="checkmark"></span>
+                            <span>Байкал</span>
+                        </label>
+                        <label class="region-checkbox">
+                            <input type="checkbox" name="region" value="kamchatka">
+                            <span class="checkmark"></span>
+                            <span>Камчатка</span>
+                        </label>
+                        <label class="region-checkbox">
+                            <input type="checkbox" name="region" value="karelia">
+                            <span class="checkmark"></span>
+                            <span>Карелия</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="filter-group">
+                    <h3>Цена</h3>
+                    <div class="price-range">
+                        <div class="range-inputs">
+                            <input type="number" placeholder="от" min="0" id="minPrice">
+                            <span>-</span>
+                            <input type="number" placeholder="до" min="0" id="maxPrice">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="filter-group">
+                    <h3>Сортировка</h3>
+                    <div class="sort-options">
+                        <label class="sort-radio">
+                            <input type="radio" name="sort" value="popular" checked>
+                            <span class="radiomark"></span>
+                            <span>По популярности</span>
+                        </label>
+                        <label class="sort-radio">
+                            <input type="radio" name="sort" value="price_asc">
+                            <span class="radiomark"></span>
+                            <span>Цена: низкая → высокая</span>
+                        </label>
+                        <label class="sort-radio">
+                            <input type="radio" name="sort" value="price_desc">
+                            <span class="radiomark"></span>
+                            <span>Цена: высокая → низкая</span>
+                        </label>
+                        <label class="sort-radio">
+                            <input type="radio" name="sort" value="rating">
+                            <span class="radiomark"></span>
+                            <span>По рейтингу</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tg-filters-footer">
+                <button class="tg-reset-filters" id="resetFilters">
+                    Сбросить
+                </button>
+                <button class="tg-apply-filters" id="applyFilters">
+                    Применить
+                </button>
+            </div>
+        </section>
+        
+        <!-- Tour Details -->
+        <section class="tg-tab" id="tourDetailTab">
+            <div class="tg-tour-detail">
+                <!-- Tour details will be loaded here -->
+            </div>
+        </section>
+    </main>
+    
+    <!-- Bottom Navigation -->
+    <nav class="tg-bottom-nav">
+        <button class="nav-btn active" data-tab="homeTab">
+            <i class="fas fa-home"></i>
+            <span>Главная</span>
+        </button>
+        <button class="nav-btn" data-tab="searchTab">
+            <i class="fas fa-search"></i>
+            <span>Поиск</span>
+        </button>
+        <button class="nav-btn" data-tab="filtersTab">
+            <i class="fas fa-filter"></i>
+            <span>Фильтры</span>
+        </button>
+        <button class="nav-btn" id="favoritesBtn">
+            <i class="far fa-heart"></i>
+            <span>Избранное</span>
+        </button>
+        <button class="nav-btn" id="profileBtn">
+            <i class="far fa-user"></i>
+            <span>Профиль</span>
+        </button>
+    </nav>
+    
+    <!-- Quick Menu -->
+    <div class="tg-quick-menu" id="quickMenu">
+        <div class="tg-menu-overlay" id="menuOverlay"></div>
+        <div class="tg-menu-content">
+            <div class="tg-menu-header">
+                <h3>Меню</h3>
+                <button class="tg-close-menu" id="closeMenu">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="tg-menu-items">
+                <a href="#" class="tg-menu-item">
+                    <i class="fas fa-info-circle"></i>
+                    <span>О приложении</span>
+                </a>
+                <a href="#" class="tg-menu-item">
+                    <i class="fas fa-question-circle"></i>
+                    <span>Помощь</span>
+                </a>
+                <a href="#" class="tg-menu-item">
+                    <i class="fas fa-star"></i>
+                    <span>Отзывы</span>
+                </a>
+                <a href="#" class="tg-menu-item">
+                    <i class="fas fa-cog"></i>
+                    <span>Настройки</span>
+                </a>
+                <a href="#" class="tg-menu-item">
+                    <i class="fas fa-headset"></i>
+                    <span>Поддержка</span>
+                </a>
+            </div>
+            <div class="tg-menu-footer">
+                <button class="tg-logout-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Выйти</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tour Modal -->
+    <div class="tg-modal-overlay" id="tourModal">
+        <div class="tg-modal-content">
+            <div class="tg-modal-header">
+                <h3 id="modalTourName"></h3>
+                <button class="tg-modal-close" id="closeModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="tg-modal-body" id="modalTourContent">
+                <!-- Modal content will be loaded here -->
+            </div>
+            <div class="tg-modal-footer">
+                <button class="tg-modal-btn secondary" id="tourConsult">
+                    <i class="fas fa-comment-alt"></i>
+                    Консультация
+                </button>
+                <button class="tg-modal-btn primary" id="tourBook">
+                    <i class="fas fa-shopping-cart"></i>
+                    Забронировать
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Notification -->
+    <div class="tg-notification" id="notification">
+        <div class="tg-notification-content">
+            <i class="fas fa-check-circle"></i>
+            <span id="notificationText"></span>
+        </div>
+    </div>
+    
+    <!-- Loading -->
+    <div class="tg-loading" id="loading">
+        <div class="tg-loader">
+            <div class="loader-spinner"></div>
+            <p>Загрузка...</p>
+        </div>
+    </div>
+
+    <script src="data.js"></script>
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

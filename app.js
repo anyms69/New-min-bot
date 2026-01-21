@@ -67,3 +67,43 @@ filterButtons.forEach(btn=>{btn.addEventListener('click',()=>{filterButtons.forE
 
 buildCards(data);
 
+const data = [
+  { /* экскурсия 1 */ },
+  { /* экскурсия 2 */ },
+  { 
+    title: "Музеи и искусство",
+    description: "Лучшие музеи города с гидом",
+    price: 1800,
+    duration: "2.5 часа",
+    category: "музейная",
+    city: "Санкт-Петербург",
+    language: "RU",
+    images: [
+      "https://images.unsplash.com/photo-1529630897576-8e0db8d4d3e1?crop=entropy&cs=tinysrgb&fit=max&h=200",
+      "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?crop=entropy&cs=tinysrgb&fit=max&h=200"
+    ],
+    weekdays: ["Tue","Thu"],
+    max_participants: 0,
+    available: false,
+    booking_link: "https://example.com/booking3",
+    active: true
+  },
+  { 
+    title: "Набережная вечерняя",
+    description: "Романтическая прогулка вдоль набережной",
+    price: 1200,
+    duration: "1.5 часа",
+    category: "ночная",
+    city: "Санкт-Петербург",
+    language: "RU",
+    images: [
+      "https://images.unsplash.com/photo-1529400971008-f566de0e6dfc?crop=entropy&cs=tinysrgb&fit=max&h=200",
+      "https://images.unsplash.com/photo-1549887533-78e0a2f22c3c?crop=entropy&cs=tinysrgb&fit=max&h=200"
+    ],
+    weekdays: ["Fri","Sat"],
+    max_participants: 10,
+    available: true,
+    booking_link: "https://example.com/booking4",
+    active: true
+  }
+];

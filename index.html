@@ -3,20 +3,32 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Экскурсии Mini-App</title>
+<title>Экскурсии</title>
 <link rel="stylesheet" href="styles.css">
 </head>
-<body>
-<header><h1>Экскурсии</h1></header>
 
-<div id="filters">
-  <button class="filter-btn active" data-type="all">Все</button>
-  <button class="filter-btn" data-type="пешая">Пешая</button>
-  <button class="filter-btn" data-type="ночная">Ночная</button>
-  <button class="filter-btn" data-type="музейная">Музейная</button>
+<body>
+
+<header class="top-bar">
+  <h1>Экскурсии</h1>
+  <input id="search" placeholder="Поиск экскурсий…" />
+</header>
+
+<div class="filters">
+  <button data-type="all" class="active">Все</button>
+  <button data-type="пешая">Пешие</button>
+  <button data-type="ночная">Ночные</button>
+  <button data-type="музейная">Музеи</button>
 </div>
 
-<div id="cards-container"></div>
+<main id="cards"></main>
+
+<nav class="bottom-nav">
+  <button class="active">🏠</button>
+  <button>❤️</button>
+  <button>📍</button>
+  <button>👤</button>
+</nav>
 
 <script src="app.js"></script>
 </body>

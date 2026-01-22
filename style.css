@@ -1,31 +1,37 @@
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
   font-family: Arial, sans-serif;
   background: #f2f2f2;
 }
 
-h1 {
-  text-align: center;
-}
-
-.tabs {
+#app {
+  height: 100vh;
   display: flex;
-  justify-content: center;
-  gap: 10px;
+  flex-direction: column;
 }
 
-button {
-  padding: 10px 16px;
+#content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
 }
 
 .page {
-  padding: 12px;
+  display: none;
+}
+
+.page.active {
+  display: block;
 }
 
 .card {
   background: white;
+  border-radius: 10px;
   margin-bottom: 12px;
-  border-radius: 8px;
   overflow: hidden;
 }
 
@@ -37,4 +43,23 @@ button {
 
 .card-body {
   padding: 10px;
+}
+
+#nav {
+  display: flex;
+  border-top: 1px solid #ddd;
+  background: white;
+}
+
+#nav button {
+  flex: 1;
+  padding: 12px;
+  font-size: 14px;
+  border: none;
+  background: none;
+}
+
+#nav button.active {
+  background: #ff7a18;
+  color: white;
 }

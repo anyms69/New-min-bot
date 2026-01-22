@@ -1,72 +1,46 @@
-const pages = document.querySelectorAll(".page");
-const navButtons = document.querySelectorAll(".bottom-nav button");
-
-navButtons.forEach(btn => {
-  btn.onclick = () => {
-    navButtons.forEach(b => b.classList.remove("active"));
-    btn.classList.add("active");
-    pages.forEach(p => p.classList.remove("active"));
-    document.getElementById(btn.dataset.page).classList.add("active");
-  };
-});
-
-const tours = [
+const toursData = [
   {
-    title: "Каппадокия на 2 дня",
-    image: "https://images.unsplash.com/photo-1526481280691-3d0f3a1a1b1b",
+    title: "Каппадокия",
     price: "120 €",
-    badges: ["🔥 Хит", "🚌 Трансфер"],
-    description: "Полет на шарах, подземные города, каньоны."
+    img: "https://images.unsplash.com/photo-1526481280691-3d0f3a1a1b1b"
   },
   {
-    title: "Рафтинг + Каньон",
-    image: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee",
+    title: "Рафтинг",
     price: "35 €",
-    badges: ["💦 Актив", "🍴 Обед"],
-    description: "Адреналин и природа Таврских гор."
-  },
-  {
-    title: "Дайвинг в Анталии",
-    image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e",
-    price: "40 €",
-    badges: ["🤿 Море"],
-    description: "Два погружения, инструктор, оборудование."
+    img: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee"
   }
 ];
 
-const cars = [
+const carsData = [
   {
     title: "Fiat Egea",
-    image: "https://images.unsplash.com/photo-1549924231-f129b911e442",
     price: "45 € / день",
-    badges: ["🚗 Автомат", "❄️ Кондиционер"]
-  },
-  {
-    title: "BMW 3 Series",
-    image: "https://images.unsplash.com/photo-1549921296-3c7d5f5c77c4",
-    price: "95 € / день",
-    badges: ["✨ Премиум"]
+    img: "https://images.unsplash.com/photo-1549924231-f129b911e442"
   }
 ];
 
-function renderCards(data, container) {
-  container.innerHTML = "";
+function render(data, id) {
+  const el = document.getElementById(id);
+  el.innerHTML = "";
   data.forEach(e => {
-    const div = document.createElement("div");
-    div.className = "card glass";
-    div.innerHTML = `
-      <img src="${e.image}">
-      <div class="card-body">
-        <h3>${e.title}</h3>
-        <div class="badges">${e.badges.map(b=>`<span>${b}</span>`).join("")}</div>
-        <p>${e.description || ""}</p>
-        <div class="price">${e.price}</div>
-        <button class="action">Забронировать</button>
+    el.innerHTML += `
+      <div class="card">
+        <img src="${e.img}">
+        <div class="card-body">
+          <h3>${e.title}</h3>
+          <p>${e.price}</p>
+        </div>
       </div>
     `;
-    container.appendChild(div);
   });
 }
 
-renderCards(tours, document.getElementById("tours"));
-renderCards(cars, document.getElementById("cars"));
+function show(page) {
+  document.getElementById("tours").style.display = "none";
+  document.getElementById("cars").style.display = "none";
+  document.getElementById(page).style.display = "block";
+}
+
+render(toursData, "tours");
+render(carsData, "cars");
+show("tours");

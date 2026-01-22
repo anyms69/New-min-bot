@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+    <title>TURISTA PRO | Премиум туры по России</title>
+    
+    <!-- PWA мета-теги -->
+    <meta name="theme-color" content="#0066FF">
+    <meta name="description" content="Эксклюзивные туры по России с профессиональными гидами. 30+ направлений, интерактивное бронирование, AR просмотр мест.">
+    <meta name="keywords" content="туры, Россия, путешествия, экскурсии, бронирование">
+    <meta property="og:image" content="https://images.unsplash.com/photo-1513326738677-b964603b136d">
+    
+    <!-- Предзагрузка критических ресурсов -->
+    <link rel="preload" href="styles/main.css" as="style">
+    <link rel="preload" href="scripts/app.js" as="script">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" as="style">
+    
+    <!-- Шрифты -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Иконки -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- GSAP для анимаций -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    
+    <!-- Основные стили -->
+    <link rel="stylesheet" href="styles/main.css">
+    
+    <!-- Telegram Web App SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏔️</text></svg>">
+    
+    <style>
+        /* Критический CSS для мгновенной загрузки */
+        :root {
+            --primary: 0 102 255;
+            --secondary: 147 51 234;
+            --accent: 6 182 212;
+            --success: 34 197 94;
+            --warning: 245 158 11;
+            --danger: 239 68 68;
+            --bg: 255 255 255;
+            --surface: 249 250 251;
+            --text: 17 24 39;
+            --text-secondary: 107 114 128;
+            --border: 229 231 235;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: rgb(var(--bg));
+            color: rgb(var(--text));
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        /* Скелетон для предотвращения смещения контента */
+        .skeleton {
+            background: linear-gradient(90deg, rgb(var(--surface)) 25%, rgb(var(--border)) 50%, rgb(var(--surface)) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+    </style>
+</head>
+<body>
+    <!-- 3D фон с WebGL -->
+    <canvas id="bgCanvas" class="webgl-background"></canvas>
+    
+    <!-- Progressive Web App Shell -->
+    <div class="app-shell">
+        <!-- Header с параллакс эффектом -->
+        <header class="app-header" data-parallax>
+            <div class="header-bg"></div>
+            <div class="header-content">
+                <div class="header-top">
+                    <button class="btn-menu" id="menuBtn" aria-label="Меню">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+                    
+                    <div class="logo" data-logo-animation>
+                        <div class="logo-icon">
+                            <i class="fas fa-mountain-sun"></i>
+                        </div>
+                        <div class="logo-text">
+                            <span class="logo-main">TURISTA</span>
+                            <span class="logo-sub">PRO</span>
+                        </div>
+                    </div>
+                    
+                    <div class="header-actions">
+                        <button class="btn-notification" id="notificationBtn" aria-label="Уведомления">
+                            <i class="fas fa-bell"></i>
+                            <span class="notification-badge">3</span>
+                        </button>
+                        <button class="btn-profile" id="profileBtn" aria-label="Профиль">
+                            <div class="avatar">
+                                <i class="fas fa-user"></i>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Hero секция с типинг эффектом -->
+                <div class="hero">
+                    <div class="hero-content">
+                        <h1 class="hero-title" id="typingText">
+                            <span class="text-gradient">Откройте Россию</span>
+                            <br>
+                            <span class="typing-cursor">|</span>
+                        </h1>
+                        <p class="hero-subtitle">
+                            30+ эксклюзивных маршрутов. Реальные отзывы. Гарантия лучшей цены.
+                        </p>
+                        
+                        <!-- Интерактивный поиск с автодополнением -->
+                        <div class="search-hero">
+                            <div class="search-container">
+                                <i class="fas fa-search search-icon"></i>
+                                <input type="text" 
+                                       class="search-input" 
+                                       id="heroSearch"
+                                       placeholder="Куда хотите поехать?"
+                                       autocomplete="off"
+                                       data-autocomplete>
+                                <div class="search-suggestions" id="searchSuggestions"></div>
+                            </div>
+                            <button class="btn-search-advanced" id="advancedSearchBtn">
+                                <i class="fas fa-sliders-h"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- Быстрые фильтры -->
+                        <div class="quick-filters">
+                            <div class="filter-scroll">
+                                <button class="filter-chip active" data-filter="all">
+                                    <i class="fas fa-globe"></i>
+                                    Все туры
+                                </button>
+                                <button class="filter-chip" data-filter="featured">
+                                    <i class="fas fa-crown"></i>
+                                    Премиум
+                                </button>
+                                <button class="filter-chip" data-filter="adventure">
+                                    <i class="fas fa-hiking"></i>
+                                    Приключения
+                                </button>
+                                <button class="filter-chip" data-filter="culture">
+                                    <i class="fas fa-landmark"></i>
+                                    Культура
+                                </button>
+                                <button class="filter-chip" data-filter="nature">
+                                    <i class="fas fa-tree"></i>
+                                    Природа
+                                </button>
+                                <button class="filter-chip" data-filter="family">
+                                    <i class="fas fa-users"></i>
+                                    Семьям
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Индикатор прокрутки -->
+            <div class="scroll-indicator">
+                <div class="mouse">
+                    <div class="wheel"></div>
+                </div>
+                <span>Листайте вниз</span>
+            </div>
+        </header>
+
+        <!-- Main App Content -->
+        <main class="app-main">
+            <!-- Статистика в реальном времени -->
+            <section class="stats-section" data-stats-animation>
+                <div class="container">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-map-marked-alt"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-number" data-count="34">0</div>
+                                <div class="stat-label">Направления</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-user-check"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-number" data-count="1568">0</div>
+                                <div class="stat-label">Довольных клиентов</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-number" data-count="4.9">0</div>
+                                <div class="stat-label">Средний рейтинг</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-number" data-count="100">0</div>
+                                <div class="stat-label">% Безопасность</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Популярные туры с 3D карточками -->
+            <section class="featured-section">
+                <div class="container">
+                    <div class="section-header">
+                        <h2 class="section-title">
+                            <span class="title-gradient">Популярные туры</span>
+                            <span class="title-badge">🔥 Хиты сезона</span>
+                        </h2>
+                        <a href="#all-tours" class="section-link">
+                            Все туры <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                    
+                    <div class="featured-grid" id="featuredTours">
+                        <!-- 3D карточки будут загружены динамически -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Интерактивная карта России -->
+            <section class="map-section">
+                <div class="container">
+                    <div class="section-header">
+                        <h2 class="section-title">Исследуйте регионы</h2>
+                        <p class="section-subtitle">Нажмите на регион, чтобы увидеть доступные туры</p>
+                    </div>
+                    
+                    <div class="map-container">
+                        <div class="russia-map" id="russiaMap">
+                            <!-- SVG карта России будет вставлена динамически -->
+                        </div>
+                        <div class="map-legend">
+                            <div class="legend-item">
+                                <div class="legend-color easy"></div>
+                                <span>Легкие маршруты</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color medium"></div>
+                                <span>Средняя сложность</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color hard"></div>
+                                <span>Сложные маршруты</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Все туры с фильтрами в реальном времени -->
+            <section class="all-tours-section" id="all-tours">
+                <div class="container">
+                    <div class="tours-header">
+                        <h2 class="section-title">Все туры <span class="count-badge" id="toursCount">30</span></h2>
+                        
+                        <div class="tours-controls">
+                            <div class="view-toggle">
+                                <button class="view-btn active" data-view="grid">
+                                    <i class="fas fa-th-large"></i>
+                                </button>
+                                <button class="view-btn" data-view="list">
+                                    <i class="fas fa-list"></i>
+                                </button>
+                                <button class="view-btn" data-view="map">
+                                    <i class="fas fa-map"></i>
+                                </button>
+                            </div>
+                            
+                            <div class="sort-dropdown">
+                                <select class="sort-select" id="sortSelect">
+                                    <option value="popular">По популярности</option>
+                                    <option value="price_asc">Цена: низкая → высокая</option>
+                                    <option value="price_desc">Цена: высокая → низкая</option>
+                                    <option value="duration">По длительности</option>
+                                    <option value="rating">По рейтингу</option>
+                                    <option value="new">Сначала новые</option>
+                                </select>
+                            </div>
+                            
+                            <button class="btn-filters" id="openFilters">
+                                <i class="fas fa-filter"></i>
+                                Фильтры
+                                <span class="filters-count">5</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="tours-container">
+                        <!-- Фильтры в сайдбаре -->
+                        <aside class="filters-sidebar" id="filtersSidebar">
+                            <div class="filters-header">
+                                <h3>Фильтры</h3>
+                                <button class="close-filters" id="closeFilters">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            
+                            <div class="filters-content">
+                                <div class="filter-group">
+                                    <h4>Цена, ₽</h4>
+                                    <div class="price-range">
+                                        <input type="range" id="priceMin" min="5000" max="200000" value="10000" step="5000">
+                                        <input type="range" id="priceMax" min="5000" max="200000" value="150000" step="5000">
+                                        <div class="price-values">
+                                            <span id="priceMinValue">10 000</span>
+                                            <span>-</span>
+                                            <span id="priceMaxValue">150 000</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="filter-group">
+                                    <h4>Длительность</h4>
+                                    <div class="duration-checkboxes">
+                                        <label class="checkbox">
+                                            <input type="checkbox" name="duration" value="1-3" checked>
+                                            <span class="checkmark"></span>
+                                            1-3 дня
+                                        </label>
+                                        <label class="checkbox">
+                                            <input type="checkbox" name="duration" value="4-7" checked>
+                                            <span class="checkmark"></span>
+                                            4-7 дней
+                                        </label>
+                                        <label class="checkbox">
+                                            <input type="checkbox" name="duration" value="8+" checked>
+                                            <span class="checkmark"></span>
+                                            8+ дней
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="filter-group">
+                                    <h4>Сложность</h4>
+                                    <div class="difficulty-slider">
+                                        <div class="slider-track">
+                                            <div class="slider-thumb" id="difficultyThumb"></div>
+                                        </div>
+                                        <div class="slider-labels">
+                                            <span>Легкая</span>
+                                            <span>Средняя</span>
+                                            <span>Сложная</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="filter-group">
+                                    <h4>Регионы</h4>
+                                    <div class="regions-select">
+                                        <div class="selected-regions" id="selectedRegions">
+                                            <!-- Выбранные регионы -->
+                                        </div>
+                                        <button class="btn-select-regions" id="selectRegionsBtn">
+                                            Выбрать регионы
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="filter-group">
+                                    <h4>Удобства</h4>
+                                    <div class="amenities-grid">
+                                        <label class="amenity">
+                                            <input type="checkbox" name="amenity" value="wifi">
+                                            <span class="amenity-icon">
+                                                <i class="fas fa-wifi"></i>
+                                            </span>
+                                            <span>Wi-Fi</span>
+                                        </label>
+                                        <label class="amenity">
+                                            <input type="checkbox" name="amenity" value="meal">
+                                            <span class="amenity-icon">
+                                                <i class="fas fa-utensils"></i>
+                                            </span>
+                                            <span>Питание</span>
+                                        </label>
+                                        <label class="amenity">
+                                            <input type="checkbox" name="amenity" value="transport">
+                                            <span class="amenity-icon">
+                                                <i class="fas fa-bus"></i>
+                                            </span>
+                                            <span>Трансфер</span>
+                                        </label>
+                                        <label class="amenity">
+                                            <input type="checkbox" name="amenity" value="guide">
+                                            <span class="amenity-icon">
+                                                <i class="fas fa-user-tie"></i>
+                                            </span>
+                                            <span>Гид</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="filters-footer">
+                                <button class="btn-reset" id="resetFilters">
+                                    Сбросить все
+                                </button>
+                                <button class="btn-apply" id="applyFilters">
+                                    Применить фильтры
+                                </button>
+                            </div>
+                        </aside>
+                        
+                        <!-- Основная сетка туров -->
+                        <div class="tours-grid" id="toursGrid">
+                            <!-- Туры загружаются динамически -->
+                        </div>
+                    </div>
+                    
+                    <!-- Пагинация с бесконечной прокруткой -->
+                    <div class="pagination">
+                        <button class="btn-load-more" id="loadMoreBtn">
+                            <span class="btn-text">Загрузить ещё</span>
+                            <div class="loader" id="loadMoreLoader">
+                                <div class="spinner"></div>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Отзывы с реальными фото пользователей -->
+            <section class="reviews-section">
+                <div class="container">
+                    <div class="section-header">
+                        <h2 class="section-title">Реальные отзывы</h2>
+                        <a href="#all-reviews" class="section-link">
+                            Все отзывы <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                    
+                    <div class="reviews-slider" id="reviewsSlider">
+                        <!-- Отзывы загружаются динамически -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Партнеры и гарантии -->
+            <section class="partners-section">
+                <div class="container">
+                    <div class="section-header">
+                        <h2 class="section-title">Нам доверяют</h2>
+                    </div>
+                    
+                    <div class="partners-grid">
+                        <div class="partner-card">
+                            <div class="partner-icon">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <h3>100% безопасность</h3>
+                            <p>Все гиды сертифицированы, маршруты проверены</p>
+                        </div>
+                        <div class="partner-card">
+                            <div class="partner-icon">
+                                <i class="fas fa-medal"></i>
+                            </div>
+                            <h3>Премиум уровень</h3>
+                            <p>Только проверенные отели и транспорт</p>
+                        </div>
+                        <div class="partner-card">
+                            <div class="partner-icon">
+                                <i class="fas fa-handshake"></i>
+                            </div>
+                            <h3>Гарантия цены</h3>
+                            <p>Лучшая цена или вернем разницу</p>
+                        </div>
+                        <div class="partner-card">
+                            <div class="partner-icon">
+                                <i class="fas fa-headset"></i>
+                            </div>
+                            <h3>Поддержка 24/7</h3>
+                            <p>Поможем в любой ситуации</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer с подпиской и соцсетями -->
+        <footer class="app-footer">
+            <div class="container">
+                <div class="footer-content">
+                    <div class="footer-main">
+                        <div class="footer-brand">
+                            <div class="logo">
+                                <i class="fas fa-mountain-sun"></i>
+                                <div class="logo-text">
+                                    <span class="logo-main">TURISTA</span>
+                                    <span class="logo-sub">PRO</span>
+                                </div>
+                            </div>
+                            <p class="footer-description">
+                                Премиум туры по России с 2012 года. 
+                                Более 1500 довольных клиентов, 34 направления, профессиональные гиды.
+                            </p>
+                        </div>
+                        
+                        <div class="footer-subscribe">
+                            <h4>Подпишитесь на новости</h4>
+                            <p>Первыми узнавайте о новых турах и акциях</p>
+                            <div class="subscribe-form">
+                                <input type="email" placeholder="Ваш email" id="subscribeEmail">
+                                <button class="btn-subscribe" id="subscribeBtn">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="footer-links">
+                        <div class="link-column">
+                            <h4>Туры</h4>
+                            <a href="#popular">Популярные</a>
+                            <a href="#new">Новинки</a>
+                            <a href="#discount">Скидки</a>
+                            <a href="#all">Все туры</a>
+                        </div>
+                        
+                        <div class="link-column">
+                            <h4>Регионы</h4>
+                            <a href="#golden-ring">Золотое кольцо</a>
+                            <a href="#caucasus">Кавказ</a>
+                            <a href="#baikal">Байкал</a>
+                            <a href="#kamchatka">Камчатка</a>
+                        </div>
+                        
+                        <div class="link-column">
+                            <h4>Компания</h4>
+                            <a href="#about">О нас</a>
+                            <a href="#reviews">Отзывы</a>
+                            <a href="#blog">Блог</a>
+                            <a href="#contacts">Контакты</a>
+                        </div>
+                        
+                        <div class="link-column">
+                            <h4>Поддержка</h4>
+                            <a href="#faq">FAQ</a>
+                            <a href="#booking">Как забронировать</a>
+                            <a href="#payment">Оплата</a>
+                            <a href="#refund">Возврат</a>
+                        </div>
+                    </div>
+                    
+                    <div class="footer-social">
+                        <h4>Мы в соцсетях</h4>
+                        <div class="social-links">
+                            <a href="#" class="social-link" aria-label="ВКонтакте">
+                                <i class="fab fa-vk"></i>
+                            </a>
+                            <a href="#" class="social-link" aria-label="Telegram">
+                                <i class="fab fa-telegram"></i>
+                            </a>
+                            <a href="#" class="social-link" aria-label="Instagram">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                            <a href="#" class="social-link" aria-label="YouTube">
+                                <i class="fab fa-youtube"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="footer-bottom">
+                    <div class="copyright">
+                        © 2024 TURISTA PRO. Все права защищены.
+                    </div>
+                    
+                    <div class="footer-payments">
+                        <i class="fab fa-cc-visa" title="Visa"></i>
+                        <i class="fab fa-cc-mastercard" title="Mastercard"></i>
+                        <i class="fab fa-cc-paypal" title="PayPal"></i>
+                        <i class="fab fa-cc-apple-pay" title="Apple Pay"></i>
+                        <i class="fab fa-google-pay" title="Google Pay"></i>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Модальные окна и всплывающие элементы -->
+
+    <!-- Модалка выбора регионов -->
+    <div class="modal-overlay" id="regionsModal">
+        <div class="modal modal-lg">
+            <div class="modal-header">
+                <h3>Выбор регионов</h3>
+                <button class="modal-close" id="closeRegionsModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="regions-grid-modal" id="regionsGridModal">
+                    <!-- Регионы загружаются динамически -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="cancelRegions">Отмена</button>
+                <button class="btn-primary" id="saveRegions">Сохранить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модалка деталей тура -->
+    <div class="modal-overlay" id="tourModal">
+        <div class="modal modal-xl">
+            <div class="modal-header">
+                <h3 id="modalTourTitle"></h3>
+                <button class="modal-close" id="closeTourModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="tourModalBody">
+                <!-- Контент тура загружается динамически -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="tourConsultBtn">
+                    <i class="fas fa-comments"></i>
+                    Консультация
+                </button>
+                <button class="btn-primary" id="tourBookBtn">
+                    <i class="fas fa-calendar-check"></i>
+                    Забронировать
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Боковое меню навигации -->
+    <div class="side-menu" id="sideMenu">
+        <div class="menu-overlay" id="menuOverlay"></div>
+        <div class="menu-content">
+            <div class="menu-header">
+                <div class="user-info">
+                    <div class="avatar-large">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="user-details">
+                        <h4>Гость</h4>
+                        <p>Войдите в аккаунт</p>
+                    </div>
+                </div>
+                <button class="menu-close" id="closeMenuBtn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <nav class="menu-nav">
+                <a href="#home" class="menu-link active">
+                    <i class="fas fa-home"></i>
+                    <span>Главная</span>
+                </a>
+                <a href="#favorites" class="menu-link">
+                    <i class="fas fa-heart"></i>
+                    <span>Избранное</span>
+                    <span class="badge">12</span>
+                </a>
+                <a href="#bookings" class="menu-link">
+                    <i class="fas fa-suitcase"></i>
+                    <span>Мои бронирования</span>
+                    <span class="badge">3</span>
+                </a>
+                <a href="#reviews" class="menu-link">
+                    <i class="fas fa-star"></i>
+                    <span>Мои отзывы</span>
+                </a>
+                <a href="#profile" class="menu-link">
+                    <i class="fas fa-user-cog"></i>
+                    <span>Настройки профиля</span>
+                </a>
+                <a href="#help" class="menu-link">
+                    <i class="fas fa-question-circle"></i>
+                    <span>Помощь</span>
+                </a>
+                <a href="#about" class="menu-link">
+                    <i class="fas fa-info-circle"></i>
+                    <span>О приложении</span>
+                </a>
+            </nav>
+            
+            <div class="menu-footer">
+                <button class="btn-logout" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Выйти</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Уведомления -->
+    <div class="notification-center" id="notificationCenter">
+        <div class="notification-header">
+            <h4>Уведомления</h4>
+            <button class="notification-close" id="closeNotifications">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="notification-list" id="notificationList">
+            <!-- Уведомления загружаются динамически -->
+        </div>
+    </div>
+
+    <!-- Предзагрузка изображений -->
+    <div class="preload-images" aria-hidden="true">
+        <!-- Критические изображения предзагружаются здесь -->
+    </div>
+
+    <!-- Скрипты -->
+    <script src="scripts/threejs-scene.js" defer></script>
+    <script src="data/tours.js" defer></script>
+    <script src="data/regions.js" defer></script>
+    <script src="scripts/gsap-animations.js" defer></script>
+    <script src="scripts/map-engine.js" defer></script>
+    <script src="scripts/app.js" defer></script>
+    
+    <!-- Service Worker -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js');
+            });
+        }
+    </script>
+</body>
+</html>

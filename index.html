@@ -2,22 +2,26 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Antalya Tours</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Antalya App</title>
 <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
 
-<h1>Antalya Tours</h1>
+<div id="app">
 
-<div class="tabs">
-  <button onclick="show('tours')">Экскурсии</button>
-  <button onclick="show('cars')">Аренда авто</button>
+  <div id="content">
+    <div id="tours" class="page active"></div>
+    <div id="cars" class="page"></div>
+  </div>
+
+  <div id="nav">
+    <button data-page="tours">🏝 Экскурсии</button>
+    <button data-page="cars">🚗 Авто</button>
+  </div>
+
 </div>
-
-<div id="tours" class="page"></div>
-<div id="cars" class="page"></div>
 
 <script src="app.js"></script>
 </body>

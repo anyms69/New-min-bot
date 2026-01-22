@@ -1,4 +1,17 @@
-const toursData = [
+const pages = document.querySelectorAll(".page");
+const navButtons = document.querySelectorAll("#nav button");
+
+navButtons.forEach(btn => {
+  btn.addEventListener("click", () => {
+    navButtons.forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+
+    pages.forEach(p => p.classList.remove("active"));
+    document.getElementById(btn.dataset.page).classList.add("active");
+  });
+});
+
+const tours = [
   {
     title: "Каппадокия",
     price: "120 €",
@@ -11,7 +24,7 @@ const toursData = [
   }
 ];
 
-const carsData = [
+const cars = [
   {
     title: "Fiat Egea",
     price: "45 € / день",
@@ -35,12 +48,6 @@ function render(data, id) {
   });
 }
 
-function show(page) {
-  document.getElementById("tours").style.display = "none";
-  document.getElementById("cars").style.display = "none";
-  document.getElementById(page).style.display = "block";
-}
-
-render(toursData, "tours");
-render(carsData, "cars");
-show("tours");
+render(tours, "tours");
+render(cars, "cars");
+navButtons[0].click();

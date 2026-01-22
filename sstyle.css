@@ -4,12 +4,14 @@
 
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
-  background: #f2f2f2;
+  font-family: system-ui, -apple-system, Arial, sans-serif;
+  background: #f5f5f5;
+  height: 100dvh;
+  overflow: hidden;
 }
 
 #app {
-  height: 100dvn;
+  height: 100%;
   display: flex;
   flex-direction: column;
 }
@@ -30,9 +32,10 @@ body {
 
 .card {
   background: white;
-  border-radius: 10px;
+  border-radius: 12px;
   margin-bottom: 12px;
   overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
 .card img {
@@ -46,6 +49,16 @@ body {
   padding: 10px;
 }
 
+.card-body h3 {
+  margin: 0 0 6px;
+  font-size: 16px;
+}
+
+.card-body p {
+  margin: 0;
+  color: #555;
+}
+
 #nav {
   display: flex;
   border-top: 1px solid #ddd;
@@ -54,10 +67,10 @@ body {
 
 #nav button {
   flex: 1;
-  padding: 12px;
-  font-size: 14px;
+  padding: 14px;
   border: none;
   background: none;
+  font-size: 14px;
 }
 
 #nav button.active {

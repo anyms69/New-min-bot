@@ -2,17 +2,550 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Список Задач</title>
-    <link rel="stylesheet" href="styles.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Анталия Гид</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --tg-theme-bg-color: #0A1628;
+            --tg-theme-text-color: #FFFFFF;
+            --tg-theme-hint-color: #8892A6;
+            --tg-theme-link-color: #00D9FF;
+            --tg-theme-button-color: #00D9FF;
+            --tg-theme-button-text-color: #0A1628;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--tg-theme-bg-color);
+            color: var(--tg-theme-text-color);
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden;
+        }
+        #app { height: 100%; position: relative; }
+        .screen { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            overflow-y: auto; padding-bottom: 60px; display: none;
+        }
+        .screen.active { display: block; }
+        .header { 
+            padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.1); 
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .header h1 { font-size: 20px; font-weight: 700; }
+        .container { padding: 16px; }
+        .btn {
+            background: var(--tg-theme-button-color);
+            color: var(--tg-theme-button-text-color);
+            border: none; padding: 12px 24px; border-radius: 12px;
+            font-weight: 600; cursor: pointer; display: inline-flex;
+            align-items: center; justify-content: center; gap: 8px;
+        }
+        .btn:active { opacity: 0.8; }
+        .card {
+            background: rgba(255,255,255,0.05); border-radius: 16px;
+            padding: 16px; margin-bottom: 12px;
+        }
+        .loading { 
+            display: flex; flex-direction: column; 
+            align-items: center; justify-content: center; height: 200px;
+        }
+        .hidden { display: none !important; }
+        .error { color: #ff6b6b; text-align: center; padding: 20px; }
+        .tab-bar {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: rgba(26, 41, 66, 0.95);
+            display: flex; justify-content: space-around;
+            padding: 12px 0; border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        .tab-btn {
+            display: flex; flex-direction: column; align-items: center;
+            color: var(--tg-theme-hint-color); font-size: 10px;
+            background: none; border: none; cursor: pointer;
+        }
+        .tab-btn.active { color: var(--tg-theme-link-color); }
+        .tab-btn i { font-size: 20px; margin-bottom: 4px; }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Список Задач</h1>
-        <input type="text" id="taskInput" placeholder="Введите новую задачу...">
-        <button id="addTaskButton">Добавить задачу</button>
-        <ul id="taskList"></ul>
+    <div id="app">
+        <!-- Экран: Главная -->
+        <div id="screen-home" class="screen active">
+            <div class="header"><h1>Анталия Гид</h1></div>
+            <div class="container">
+                <div id="home-loading" class="loading">
+                    <div class="spinner"><i class="fas fa-sun fa-spin fa-2x" style="color:#00D9FF"></i></div>
+                    <p style="margin-top:20px;color:var(--tg-theme-hint-color)">Загрузка...</p>
+                </div>
+                <div id="home-content" class="hidden">
+                    <!-- Контент будет сгенерирован JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Экран: Каталог -->
+        <div id="screen-catalog" class="screen">
+            <div class="header"><h1>Каталог</h1></div>
+            <div class="container">
+                <div id="catalog-content">
+                    <input type="text" id="search-input" placeholder="Поиск экскурсий..." style="width:100%;padding:12px;background:rgba(255,255,255,0.05);border:none;border-radius:12px;color:var(--tg-theme-text-color);margin-bottom:16px;">
+                    <div id="categories-list" style="display:flex;overflow-x:auto;gap:8px;margin-bottom:16px;padding-bottom:8px;"></div>
+                    <div id="excursions-grid" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(150px, 1fr));gap:12px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Экран: Избранное -->
+        <div id="screen-favorites" class="screen">
+            <div class="header"><h1>Избранное</h1></div>
+            <div class="container">
+                <div id="favorites-list"></div>
+            </div>
+        </div>
+
+        <!-- Экран: Бронирования -->
+        <div id="screen-bookings" class="screen">
+            <div class="header"><h1>Мои брони</h1></div>
+            <div class="container" id="bookings-list"></div>
+        </div>
+
+        <!-- Нижняя панель навигации -->
+        <div class="tab-bar">
+            <button class="tab-btn active" data-screen="home"><i class="fas fa-home"></i><span>Главная</span></button>
+            <button class="tab-btn" data-screen="catalog"><i class="fas fa-compass"></i><span>Каталог</span></button>
+            <button class="tab-btn" data-screen="favorites"><i class="fas fa-heart"></i><span>Избранное</span></button>
+            <button class="tab-btn" data-screen="bookings"><i class="fas fa-calendar-check"></i><span>Брони</span></button>
+        </div>
     </div>
-    <script src="script.js"></script>
+
+    <script>
+        // === КОНФИГУРАЦИЯ ===
+        const backendBaseUrl = 'https://YOUR_BACKEND_URL'; // ЗАМЕНИТЕ НА РЕАЛЬНЫЙ URL
+        const apiBaseUrl = `${backendBaseUrl}/api`;
+        // ====================
+
+        let tg = window.Telegram.WebApp;
+        let currentUser = null;
+        let allExcursions = [];
+        let allCategories = [];
+        let favorites = [];
+        let bookings = [];
+
+        tg.expand();
+        tg.ready();
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            initTabs();
+            await loadUserData();
+            await loadInitialData();
+            showScreen('home');
+        });
+
+        function initTabs() {
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const screen = btn.dataset.screen;
+                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    showScreen(screen);
+                });
+            });
+        }
+
+        async function loadUserData() {
+            if (tg.initDataUnsafe?.user) {
+                currentUser = {
+                    id: tg.initDataUnsafe.user.id.toString(),
+                    firstName: tg.initDataUnsafe.user.first_name || 'Пользователь'
+                };
+                console.log('User loaded:', currentUser.id);
+            } else {
+                currentUser = { id: 'demo_user', firstName: 'Демо' };
+            }
+        }
+
+        async function loadInitialData() {
+            try {
+                const [excursionsRes, categoriesRes] = await Promise.all([
+                    fetch(`${apiBaseUrl}/excursions`).then(r => r.json()),
+                    fetch(`${apiBaseUrl}/categories`).then(r => r.json())
+                ]);
+                allExcursions = excursionsRes;
+                allCategories = categoriesRes;
+                renderHomeScreen();
+                renderCatalogScreen();
+                if (currentUser.id !== 'demo_user') {
+                    await loadFavorites();
+                    await loadBookings();
+                }
+            } catch (err) {
+                console.error('Failed to load data:', err);
+                document.getElementById('home-content').innerHTML = '<div class="error">Ошибка загрузки данных. Проверьте подключение.</div>';
+            }
+        }
+
+        function renderHomeScreen() {
+            const container = document.getElementById('home-content');
+            const popular = allExcursions.filter(e => e.is_popular).slice(0, 4);
+            
+            container.innerHTML = `
+                <div style="margin-bottom:24px;">
+                    <h2 style="margin-bottom:16px;color:var(--tg-theme-text-color);">Добро пожаловать, ${currentUser.firstName}!</h2>
+                    <p style="color:var(--tg-theme-hint-color);">Лучшие экскурсии в Анталии</p>
+                </div>
+                <div style="margin-bottom:24px;">
+                    <h3 style="margin-bottom:12px;color:var(--tg-theme-text-color);display:flex;justify-content:space-between;">
+                        <span>Популярное</span>
+                        <a href="#" onclick="showScreen('catalog');return false;" style="color:var(--tg-theme-link-color);font-size:14px;">Все</a>
+                    </h3>
+                    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;">
+                        ${popular.map(ex => `
+                            <div class="card" onclick="showExcursionDetail('${ex.id}')" style="cursor:pointer;">
+                                <div style="height:100px;background:url('${ex.images[0]}') center/cover;border-radius:12px;margin-bottom:12px;"></div>
+                                <h4 style="font-size:14px;margin-bottom:4px;color:var(--tg-theme-text-color);">${ex.title}</h4>
+                                <p style="font-size:12px;color:var(--tg-theme-hint-color);margin-bottom:8px;">${ex.location} • ${ex.duration}</p>
+                                <div style="display:flex;justify-content:space-between;align-items:center;">
+                                    <span style="font-size:16px;font-weight:bold;color:var(--tg-theme-link-color);">${ex.price} ${ex.currency}</span>
+                                    <button class="btn" onclick="event.stopPropagation();toggleFavorite('${ex.id}');" style="padding:4px 8px;font-size:12px;">
+                                        <i class="fas fa-heart"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                <div style="margin-bottom:24px;">
+                    <h3 style="margin-bottom:12px;color:var(--tg-theme-text-color);">Категории</h3>
+                    <div style="display:flex;overflow-x:auto;gap:12px;padding-bottom:8px;">
+                        ${allCategories.map(cat => `
+                            <div onclick="showCategory('${cat.id}')" style="min-width:80px;text-align:center;cursor:pointer;">
+                                <div style="width:60px;height:60px;background:rgba(0,217,255,0.1);border-radius:30px;display:flex;align-items:center;justify-content:center;margin:0 auto 8px;">
+                                    <i class="fas fa-${cat.icon === 'sailboat' ? 'ship' : cat.icon}" style="color:var(--tg-theme-link-color);font-size:24px;"></i>
+                                </div>
+                                <span style="font-size:12px;color:var(--tg-theme-text-color);">${cat.name}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            document.getElementById('home-loading').classList.add('hidden');
+            container.classList.remove('hidden');
+        }
+
+        function renderCatalogScreen() {
+            const container = document.getElementById('excursions-grid');
+            const catContainer = document.getElementById('categories-list');
+            
+            catContainer.innerHTML = `
+                <div onclick="filterByCategory(null)" style="padding:8px 16px;background:var(--tg-theme-button-color);color:var(--tg-theme-button-text-color);border-radius:20px;white-space:nowrap;cursor:pointer;">Все</div>
+                ${allCategories.map(cat => `
+                    <div onclick="filterByCategory('${cat.id}')" style="padding:8px 16px;background:rgba(255,255,255,0.05);border-radius:20px;white-space:nowrap;cursor:pointer;">${cat.name}</div>
+                `).join('')}
+            `;
+            
+            container.innerHTML = allExcursions.map(ex => `
+                <div class="card" onclick="showExcursionDetail('${ex.id}')" style="cursor:pointer;">
+                    <div style="height:120px;background:url('${ex.images[0]}') center/cover;border-radius:12px;margin-bottom:12px;position:relative;">
+                        ${ex.is_popular ? '<span style="position:absolute;top:8px;left:8px;background:#FF6B35;color:white;padding:2px 8px;border-radius:12px;font-size:10px;">Хит</span>' : ''}
+                    </div>
+                    <h4 style="font-size:14px;margin-bottom:4px;color:var(--tg-theme-text-color);">${ex.title}</h4>
+                    <p style="font-size:12px;color:var(--tg-theme-hint-color);margin-bottom:8px;">${ex.location}</p>
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <span style="font-size:16px;font-weight:bold;color:var(--tg-theme-link-color);">${ex.price} ${ex.currency}</span>
+                        <button class="btn" onclick="event.stopPropagation();toggleFavorite('${ex.id}');" style="padding:4px 8px;font-size:12px;">
+                            <i class="fas fa-heart"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function loadFavorites() {
+            if (!currentUser) return;
+            try {
+                const res = await fetch(`${apiBaseUrl}/favorites?user_id=${currentUser.id}`);
+                favorites = await res.json();
+                renderFavoritesScreen();
+            } catch (err) {
+                console.error('Failed to load favorites:', err);
+            }
+        }
+
+        function renderFavoritesScreen() {
+            const container = document.getElementById('favorites-list');
+            if (favorites.length === 0) {
+                container.innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--tg-theme-hint-color);"><i class="fas fa-heart fa-3x" style="margin-bottom:20px;"></i><p>Добавляйте понравившиеся экскурсии с помощью ♡</p></div>';
+                return;
+            }
+            container.innerHTML = favorites.map(ex => `
+                <div class="card" onclick="showExcursionDetail('${ex.id}')" style="cursor:pointer;display:flex;gap:12px;">
+                    <div style="width:100px;height:100px;background:url('${ex.images[0]}') center/cover;border-radius:12px;flex-shrink:0;"></div>
+                    <div style="flex:1;">
+                        <h4 style="font-size:16px;margin-bottom:4px;color:var(--tg-theme-text-color);">${ex.title}</h4>
+                        <p style="font-size:12px;color:var(--tg-theme-hint-color);margin-bottom:8px;">${ex.location}</p>
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <span style="font-size:18px;font-weight:bold;color:var(--tg-theme-link-color);">${ex.price} ${ex.currency}</span>
+                            <button class="btn" onclick="event.stopPropagation();toggleFavorite('${ex.id}');" style="padding:4px 8px;font-size:12px;background:#ff6b6b;">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function loadBookings() {
+            if (!currentUser) return;
+            try {
+                const res = await fetch(`${apiBaseUrl}/bookings?user_id=${currentUser.id}`);
+                bookings = await res.json();
+                renderBookingsScreen();
+            } catch (err) {
+                console.error('Failed to load bookings:', err);
+            }
+        }
+
+        function renderBookingsScreen() {
+            const container = document.getElementById('bookings-list');
+            if (bookings.length === 0) {
+                container.innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--tg-theme-hint-color);"><i class="fas fa-calendar-check fa-3x" style="margin-bottom:20px;"></i><p>У вас пока нет бронирований</p></div>';
+                return;
+            }
+            container.innerHTML = bookings.map(book => `
+                <div class="card">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+                        <span style="padding:4px 12px;background:${book.status === 'confirmed' ? 'rgba(76,175,80,0.2)' : 'rgba(255,107,53,0.2)'};color:${book.status === 'confirmed' ? '#4CAF50' : '#FF6B35'};border-radius:12px;font-size:12px;">
+                            ${book.status === 'confirmed' ? 'Подтверждено' : 'Ожидание'}
+                        </span>
+                        <span style="font-size:12px;color:var(--tg-theme-hint-color);">${new Date(book.created_at).toLocaleDateString()}</span>
+                    </div>
+                    <h4 style="font-size:16px;margin-bottom:8px;color:var(--tg-theme-text-color);">${book.excursion_title}</h4>
+                    <div style="display:flex;gap:12px;margin-bottom:12px;font-size:14px;color:var(--tg-theme-hint-color);">
+                        <span><i class="far fa-calendar"></i> ${book.date}</span>
+                        <span><i class="far fa-clock"></i> ${book.time}</span>
+                        <span><i class="fas fa-users"></i> ${book.participants} чел.</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(255,255,255,0.1);padding-top:12px;">
+                        <span style="font-size:18px;font-weight:bold;color:var(--tg-theme-link-color);">${book.total_price} ${book.currency}</span>
+                        ${book.status === 'pending' ? `<button class="btn" onclick="cancelBooking('${book.id}')" style="padding:4px 12px;font-size:12px;background:rgba(255,82,82,0.2);color:#FF5252;">Отменить</button>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function toggleFavorite(excursionId) {
+            if (!currentUser) return;
+            const isCurrentlyFavorite = favorites.some(f => f.id === excursionId);
+            try {
+                if (isCurrentlyFavorite) {
+                    await fetch(`${apiBaseUrl}/favorites?user_id=${currentUser.id}&excursion_id=${excursionId}`, { method: 'DELETE' });
+                    favorites = favorites.filter(f => f.id !== excursionId);
+                } else {
+                    await fetch(`${apiBaseUrl}/favorites`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ user_id: currentUser.id, excursion_id: excursionId })
+                    });
+                    const ex = allExcursions.find(e => e.id === excursionId);
+                    if (ex) favorites.push(ex);
+                }
+                renderFavoritesScreen();
+            } catch (err) {
+                console.error('Failed to toggle favorite:', err);
+            }
+        }
+
+        async function cancelBooking(bookingId) {
+            if (!currentUser || !confirm('Отменить бронирование?')) return;
+            try {
+                await fetch(`${apiBaseUrl}/bookings/${bookingId}/cancel?user_id=${currentUser.id}`, { method: 'PATCH' });
+                bookings = bookings.filter(b => b.id !== bookingId);
+                renderBookingsScreen();
+            } catch (err) {
+                console.error('Failed to cancel booking:', err);
+                alert('Ошибка отмены');
+            }
+        }
+
+        function showScreen(screenName) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(`screen-${screenName}`).classList.add('active');
+            
+            if (screenName === 'favorites') renderFavoritesScreen();
+            if (screenName === 'bookings') renderBookingsScreen();
+        }
+
+        function showExcursionDetail(excursionId) {
+            const ex = allExcursions.find(e => e.id === excursionId);
+            if (!ex) return;
+            
+            const isFavorite = favorites.some(f => f.id === excursionId);
+            
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position:fixed; top:0; left:0; width:100%; height:100%; 
+                background:var(--tg-theme-bg-color); z-index:1000; overflow-y:auto;
+            `;
+            
+            modal.innerHTML = `
+                <div style="position:relative;">
+                    <div style="height:300px;background:url('${ex.images[0]}') center/cover;"></div>
+                    <button onclick="document.body.removeChild(this.parentNode.parentNode)" style="position:absolute;top:20px;left:16px;width:44px;height:44px;background:rgba(0,0,0,0.5);border-radius:22px;color:white;border:none;font-size:20px;">←</button>
+                    <button onclick="toggleFavorite('${excursionId}');this.innerHTML=isFavorite?'♡':'♥'" style="position:absolute;top:20px;right:16px;width:44px;height:44px;background:rgba(0,0,0,0.5);border-radius:22px;color:${isFavorite?'#ff6b6b':'white'};border:none;font-size:20px;">${isFavorite?'♥':'♡'}</button>
+                </div>
+                <div style="padding:20px;">
+                    <h1 style="font-size:24px;margin-bottom:8px;color:var(--tg-theme-text-color);">${ex.title}</h1>
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;color:var(--tg-theme-hint-color);">
+                        <i class="fas fa-map-marker-alt"></i> <span>${ex.location}</span>
+                        <i class="fas fa-clock"></i> <span>${ex.duration}</span>
+                    </div>
+                    <p style="margin-bottom:20px;color:var(--tg-theme-text-color);line-height:1.6;">${ex.description}</p>
+                    <div style="background:rgba(0,217,255,0.1);padding:16px;border-radius:12px;margin-bottom:20px;">
+                        <h3 style="margin-bottom:8px;color:var(--tg-theme-text-color);">Что включено</h3>
+                        <ul style="color:var(--tg-theme-hint-color);padding-left:20px;">
+                            ${ex.includes.map(item => `<li>${item}</li>`).join('')}
+                        </ul>
+                    </div>
+                    <div style="position:fixed;bottom:0;left:0;right:0;background:var(--tg-theme-bg-color);padding:16px;border-top:1px solid rgba(255,255,255,0.1);display:flex;justify-content:space-between;align-items:center;">
+                        <div>
+                            <div style="font-size:12px;color:var(--tg-theme-hint-color);">Цена за человека</div>
+                            <div style="font-size:24px;font-weight:bold;color:var(--tg-theme-link-color);">${ex.price} ${ex.currency}</div>
+                        </div>
+                        <button class="btn" onclick="bookExcursion('${excursionId}')" style="padding:16px 32px;">Забронировать</button>
+                    </div>
+                    <div style="height:80px;"></div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+
+        function bookExcursion(excursionId) {
+            const ex = allExcursions.find(e => e.id === excursionId);
+            if (!ex || !currentUser) return;
+            
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position:fixed; top:0; left:0; width:100%; height:100%; 
+                background:var(--tg-theme-bg-color); z-index:1001; overflow-y:auto;
+            `;
+            
+            modal.innerHTML = `
+                <div style="padding:20px;">
+                    <button onclick="document.body.removeChild(this.parentNode.parentNode)" style="margin-bottom:20px;background:none;border:none;color:var(--tg-theme-text-color);font-size:20px;">← Назад</button>
+                    <h2 style="margin-bottom:20px;color:var(--tg-theme-text-color);">Бронирование</h2>
+                    <div style="background:rgba(255,255,255,0.05);padding:16px;border-radius:12px;margin-bottom:16px;">
+                        <h3 style="margin-bottom:8px;color:var(--tg-theme-text-color);">${ex.title}</h3>
+                        <p style="color:var(--tg-theme-hint-color);">${ex.location} • ${ex.duration}</p>
+                    </div>
+                    <div style="margin-bottom:16px;">
+                        <label style="display:block;color:var(--tg-theme-hint-color);margin-bottom:8px;">Дата</label>
+                        <input type="date" id="booking-date" style="width:100%;padding:12px;background:rgba(255,255,255,0.05);border:none;border-radius:12px;color:var(--tg-theme-text-color);">
+                    </div>
+                    <div style="margin-bottom:16px;">
+                        <label style="display:block;color:var(--tg-theme-hint-color);margin-bottom:8px;">Количество человек</label>
+                        <input type="number" id="booking-participants" value="1" min="1" max="${ex.max_participants}" style="width:100%;padding:12px;background:rgba(255,255,255,0.05);border:none;border-radius:12px;color:var(--tg-theme-text-color);">
+                    </div>
+                    <div style="margin-bottom:16px;">
+                        <label style="display:block;color:var(--tg-theme-hint-color);margin-bottom:8px;">Имя</label>
+                        <input type="text" id="booking-name" placeholder="Ваше имя" style="width:100%;padding:12px;background:rgba(255,255,255,0.05);border:none;border-radius:12px;color:var(--tg-theme-text-color);">
+                    </div>
+                    <div style="margin-bottom:24px;">
+                        <label style="display:block;color:var(--tg-theme-hint-color);margin-bottom:8px;">Телефон</label>
+                        <input type="tel" id="booking-phone" placeholder="+7 XXX XXX XX XX" style="width:100%;padding:12px;background:rgba(255,255,255,0.05);border:none;border-radius:12px;color:var(--tg-theme-text-color);">
+                    </div>
+                    <div style="background:rgba(0,217,255,0.1);padding:16px;border-radius:12px;margin-bottom:20px;">
+                        <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+                            <span style="color:var(--tg-theme-hint-color);">Стоимость</span>
+                            <span style="color:var(--tg-theme-text-color);">${ex.price} ${ex.currency} × 1 чел.</span>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;font-size:18px;font-weight:bold;">
+                            <span style="color:var(--tg-theme-text-color);">Итого</span>
+                            <span style="color:var(--tg-theme-link-color);" id="booking-total">${ex.price} ${ex.currency}</span>
+                        </div>
+                    </div>
+                    <button class="btn" onclick="submitBooking('${excursionId}')" style="width:100%;padding:16px;">Подтвердить бронь</button>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            document.getElementById('booking-participants').addEventListener('input', function() {
+                const total = ex.price * parseInt(this.value || 1);
+                document.getElementById('booking-total').textContent = `${total} ${ex.currency}`;
+            });
+            
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            document.getElementById('booking-date').value = tomorrow.toISOString().split('T')[0];
+        }
+
+        async function submitBooking(excursionId) {
+            const ex = allExcursions.find(e => e.id === excursionId);
+            if (!ex || !currentUser) return;
+            
+            const bookingData = {
+                user_id: currentUser.id,
+                excursion_id: excursionId,
+                excursion_title: ex.title,
+                date: document.getElementById('booking-date').value,
+                time: "10:00",
+                participants: parseInt(document.getElementById('booking-participants').value),
+                contact_name: document.getElementById('booking-name').value,
+                contact_phone: document.getElementById('booking-phone').value,
+                total_price: ex.price * parseInt(document.getElementById('booking-participants').value),
+                currency: ex.currency
+            };
+            
+            try {
+                const res = await fetch(`${apiBaseUrl}/bookings`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(bookingData)
+                });
+                if (res.ok) {
+                    alert('Бронирование успешно создано!');
+                    document.querySelectorAll('div[style*="z-index:1001"]').forEach(el => el.remove());
+                    await loadBookings();
+                    showScreen('bookings');
+                } else {
+                    throw new Error('Ошибка сервера');
+                }
+            } catch (err) {
+                console.error('Booking failed:', err);
+                alert('Ошибка бронирования');
+            }
+        }
+
+        function filterByCategory(categoryId) {
+            const filtered = categoryId 
+                ? allExcursions.filter(e => e.category_id === categoryId)
+                : allExcursions;
+            const container = document.getElementById('excursions-grid');
+            container.innerHTML = filtered.map(ex => `
+                <div class="card" onclick="showExcursionDetail('${ex.id}')" style="cursor:pointer;">
+                    <div style="height:120px;background:url('${ex.images[0]}') center/cover;border-radius:12px;margin-bottom:12px;position:relative;">
+                        ${ex.is_popular ? '<span style="position:absolute;top:8px;left:8px;background:#FF6B35;color:white;padding:2px 8px;border-radius:12px;font-size:10px;">Хит</span>' : ''}
+                    </div>
+                    <h4 style="font-size:14px;margin-bottom:4px;color:var(--tg-theme-text-color);">${ex.title}</h4>
+                    <p style="font-size:12px;color:var(--tg-theme-hint-color);margin-bottom:8px;">${ex.location}</p>
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <span style="font-size:16px;font-weight:bold;color:var(--tg-theme-link-color);">${ex.price} ${ex.currency}</span>
+                        <button class="btn" onclick="event.stopPropagation();toggleFavorite('${ex.id}');" style="padding:4px 8px;font-size:12px;">
+                            <i class="fas fa-heart"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function showCategory(categoryId) {
+            filterByCategory(categoryId);
+            showScreen('catalog');
+        }
+    </script>
 </body>
 </html>
